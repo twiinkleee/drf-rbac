@@ -2,7 +2,7 @@
 
 This project implements Role-Based Access Control (RBAC) using Django REST Framework (DRF), allowing users with different roles to access and manage their profiles.
 
-NOTE - The project is implemented on development branch.
+NOTE - Please check the commits in development branch to refer development stages.
 
 ### Features:
 
