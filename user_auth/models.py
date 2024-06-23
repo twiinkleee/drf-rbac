@@ -89,3 +89,16 @@ class OTP(BaseModel):
         # OTP is valid for 5 minutes
         return self.updated_at >= timezone.now() - datetime.timedelta(minutes=5)
 
+
+class UserProfile(BaseModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    bio = models.TextField(blank=True)
+    location = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        db_table = "user_profile"
+
+    def __str__(self):
+        return f'{self.user.email} Profile'
+
+

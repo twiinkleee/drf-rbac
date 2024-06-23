@@ -1,13 +1,26 @@
 from rest_framework import serializers
-from .models import User, RoleMaster, UserRole, OTP
+from .models import User, RoleMaster, UserRole, OTP, UserProfile
 from django.contrib.auth import authenticate, password_validation
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['bio', 'location']
+
+    def update(self, instance, validated_data):
+        instance.bio = validated_data.get('bio')
+        instance.location = validated_data.get('location')
+        instance.save()
+        return instance
 
 
 class UserSerializer(serializers.ModelSerializer):
     role = serializers.CharField(write_only=True)
+    profile = UserProfileSerializer(required=False)
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'password', 'role']
+        fields = ['email', 'first_name', 'last_name', 'password', 'role', 'profile']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -17,6 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
             last_name=validated_data['last_name'],
             password=validated_data['password']
         )
+        UserProfile.objects.create(user=user)
         role = RoleMaster.objects.get(role_name=validated_data['role'])
         UserRole.objects.create(user=user, role=role)
         return user

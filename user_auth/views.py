@@ -11,10 +11,10 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_jwt.settings import api_settings
-from .models import User, UserRole, OTP
-from .permissions import IsAdminUser
+from .models import User, UserRole, OTP, UserProfile
+from .permissions import IsAdminUser, IsSolutionProvider
 from .serializers import UserSerializer, LoginSerializer, OTPLoginSerializer, ChangePasswordSerializer, \
-    ForgotPasswordSerializer
+    ForgotPasswordSerializer, UserProfileSerializer
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -120,7 +120,8 @@ class ForgotPasswordView(APIView):
             # )
 
             # Assuming the reset like is sent via email
-            return Response({"message": "Password reset link sent to your email.", "link": reset_link}, status=status.HTTP_200_OK)
+            return Response({"message": "Password reset link sent to your email.", "link": reset_link},
+                            status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -139,3 +140,38 @@ class ResetPasswordView(APIView):
         except (TypeError, ValueError, OverflowError, get_user_model().DoesNotExist):
             return Response({"error": "Invalid user or token."}, status=status.HTTP_400_BAD_REQUEST)
 
+
+class UserProfileRetrieveView(APIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class UserProfileView(APIView):
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        return self.request.user
+
+    # Assuming only authenticated user and update its own profile but both
+    # authenticated user and Solution Provider can retrieve it
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated(), IsSolutionProvider()]
+        elif self.request.method == 'PUT':
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
+    def get(self, request, *args, **kwargs):
+        instance = UserProfile.objects.get(user=self.get_object())
+        serializer = self.serializer_class(instance)
+        return Response(serializer.data)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            instance = UserProfile.objects.get(user=self.get_object())
+            serializer = self.serializer_class(instance, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)

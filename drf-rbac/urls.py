@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from user_auth.views import RegisterView, LoginView, OTPLoginView, GenerateOTPView, ChangePasswordView, \
-    ForgotPasswordView, ResetPasswordView
+    ForgotPasswordView, ResetPasswordView, UserProfileView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,5 +28,5 @@ urlpatterns = [
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
     path('reset-password/<str:uidb64>/<str:token>/', ResetPasswordView.as_view(), name='reset_password'),
-
+    path('profile/', UserProfileView.as_view(), name='user-profile'),
 ]
