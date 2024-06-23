@@ -32,11 +32,10 @@ NOTE - The project is implemented on development branch.
 
 3. **Database Setup:** 
    Configure your database in settings.py.
-   Run migrations:
    ```bash
-  python manage.py makemigrations
-  python manage.py migrate
+   python manage.py makemigrations
+   python manage.py migrate
 
-  Run Server:
-  ```bash
-  python manage.py runserver
+   Run Server:
+   ```bash
+   python manage.py runserver
