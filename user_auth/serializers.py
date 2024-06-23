@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import User, RoleMaster, UserRole, OTP
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, password_validation
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -49,3 +49,38 @@ class OTPLoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("User not found")
         except OTP.DoesNotExist:
             raise serializers.ValidationError("Invalid OTP")
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Current password is incorrect.")
+        return value
+
+    def validate_new_password(self, value):
+        password_validation.validate_password(value)
+        return value
+
+    def save(self):
+        user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        return user
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        user = User.objects.filter(email=value).first()
+        if not user:
+            raise serializers.ValidationError("User with this email does not exist.")
+        return value
+
+    def save(self):
+        user = User.objects.get(email=self.validated_data['email'])
+        return user

@@ -16,7 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from user_auth.views import RegisterView, LoginView, OTPLoginView, GenerateOTPView
+from user_auth.views import RegisterView, LoginView, OTPLoginView, GenerateOTPView, ChangePasswordView, \
+    ForgotPasswordView, ResetPasswordView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,4 +25,8 @@ urlpatterns = [
     path('login/email/', LoginView.as_view(), name='login'),
     path('login/otp/', OTPLoginView.as_view(), name='login_otp'),
     path('generate-otp/', GenerateOTPView.as_view(), name='generate_otp'),
+    path('change-password/', ChangePasswordView.as_view(), name='change_password'),
+    path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
+    path('reset-password/<str:uidb64>/<str:token>/', ResetPasswordView.as_view(), name='reset_password'),
+
 ]
